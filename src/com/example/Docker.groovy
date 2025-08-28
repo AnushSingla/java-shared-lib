@@ -26,7 +26,7 @@ class Docker implements Serializable {
     }
 
     def buildPush(String imageName) {
-        // Use double quotes so Groovy interpolates imageName
+        
         script.sh "docker push ${imageName}"
     }
 }
