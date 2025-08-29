@@ -1,27 +1,33 @@
 def call() {
     echo "Building Application"
 
-    // First parse the version using build-helper plugin
-    sh "mvn build-helper:parse-version"
+    // First get the current version directly from pom.xml
+    def currentVersion = sh(script: "mvn help:evaluate -Dexpression=project.version -q -DforceStdout", returnStdout: true).trim()
+    echo "Current Version: ${currentVersion}"
 
-    // Get the version components
-    def majorVersion = sh(script: "mvn help:evaluate -Dexpression=parsedVersion.majorVersion -q -DforceStdout", returnStdout: true).trim()
-    def minorVersion = sh(script: "mvn help:evaluate -Dexpression=parsedVersion.minorVersion -q -DforceStdout", returnStdout: true).trim()
-    def currentPatchVersion = sh(script: "mvn help:evaluate -Dexpression=parsedVersion.incrementalVersion -q -DforceStdout", returnStdout: true).trim()
+    // Parse the version manually (more reliable)
+    def versionPattern = ~/(\d+)\.(\d+)\.(\d+)(-SNAPSHOT)?/
+    def matcher = versionPattern.matcher(currentVersion)
+    
+    if (matcher.find()) {
+        def majorVersion = matcher.group(1)
+        def minorVersion = matcher.group(2) 
+        def currentPatchVersion = matcher.group(3)
+        
+        // Increment patch version
+        def newPatchVersion = (currentPatchVersion as Integer) + 1
+        def fullVersion = "${majorVersion}.${minorVersion}.${newPatchVersion}"
+        
+        echo "Parsed Version: ${majorVersion}.${minorVersion}.${currentPatchVersion}"
+        echo "Bumping PATCH version to: ${fullVersion}"
 
-    echo "Current Version: ${majorVersion}.${minorVersion}.${currentPatchVersion}"
+        // Set new version
+        sh "mvn versions:set -DnewVersion=${fullVersion}"
+        sh "mvn versions:commit"
 
-    // Increment the patch version manually
-    def newPatchVersion = (currentPatchVersion as Integer) + 1
-    def fullVersion = "${majorVersion}.${minorVersion}.${newPatchVersion}"
-
-    echo "Bumping PATCH version to: ${fullVersion}"
-
-    // Set new version
-    sh "mvn versions:set -DnewVersion=${fullVersion}"
-    sh "mvn versions:commit"
-
-    env.IMAGE_TAG = fullVersion
-
-    sh "mvn package"
+        env.IMAGE_TAG = fullVersion
+        sh "mvn package"
+    } else {
+        error "Failed to parse version from: ${currentVersion}. Expected format: x.y.z or x.y.z-SNAPSHOT"
+    }
 }
