@@ -2,11 +2,11 @@
 def call() {
     echo "Building Application"
 
-    // Parse version and get major.minor.patch in one command
-    def versionInfo = sh(script: """mvn build-helper:parse-version help:evaluate -Dexpression=parsedVersion.majorVersion -Dexpression2=parsedVersion.minorVersion -Dexpression3=parsedVersion.nextIncrementalVersion -q -DforceStdout""", returnStdout: true).trim()
+    sh "mvn build-helper:parse-version"
 
-    // Split the output into major, minor, patch
-    def (majorVersion, minorVersion, patchVersion) = versionInfo.readLines()
+    def majorVersion = sh(script: "mvn help:evaluate -Dexpression=parsedVersion.majorVersion -q -DforceStdout", returnStdout: true).trim()
+    def minorVersion = sh(script: "mvn help:evaluate -Dexpression=parsedVersion.minorVersion -q -DforceStdout", returnStdout: true).trim()
+    def patchVersion = sh(script: "mvn help:evaluate -Dexpression=parsedVersion.nextIncrementalVersion -q -DforceStdout", returnStdout: true).trim()
 
     echo "Parsed Version: ${majorVersion}.${minorVersion}.${patchVersion}"
 
