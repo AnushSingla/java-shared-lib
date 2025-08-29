@@ -1,33 +1,23 @@
 def call() {
     echo "Building Application"
 
-    // First get the current version directly from pom.xml
+    // Get current version
     def currentVersion = sh(script: "mvn help:evaluate -Dexpression=project.version -q -DforceStdout", returnStdout: true).trim()
     echo "Current Version: ${currentVersion}"
 
-    // Parse the version manually (more reliable)
-    def versionPattern = ~/(\d+)\.(\d+)\.(\d+)(-SNAPSHOT)?/
-    def matcher = versionPattern.matcher(currentVersion)
+    // Remove -SNAPSHOT and split by dots
+    def cleanVersion = currentVersion.replace('-SNAPSHOT', '')
+    def parts = cleanVersion.split('\\.')
     
-    if (matcher.find()) {
-        def majorVersion = matcher.group(1)
-        def minorVersion = matcher.group(2) 
-        def currentPatchVersion = matcher.group(3)
-        
-        // Increment patch version
-        def newPatchVersion = (currentPatchVersion as Integer) + 1
-        def fullVersion = "${majorVersion}.${minorVersion}.${newPatchVersion}"
-        
-        echo "Parsed Version: ${majorVersion}.${minorVersion}.${currentPatchVersion}"
-        echo "Bumping PATCH version to: ${fullVersion}"
+    // Increment patch version (third part)
+    def newPatch = (parts[2] as Integer) + 1
+    def fullVersion = "${parts[0]}.${parts[1]}.${newPatch}"
 
-        // Set new version
-        sh "mvn versions:set -DnewVersion=${fullVersion}"
-        sh "mvn versions:commit"
+    echo "Bumping to: ${fullVersion}"
 
-        env.IMAGE_TAG = fullVersion
-        sh "mvn package"
-    } else {
-        error "Failed to parse version from: ${currentVersion}. Expected format: x.y.z or x.y.z-SNAPSHOT"
-    }
+    // Update version and build
+    sh "mvn versions:set -DnewVersion=${fullVersion}"
+    sh "mvn versions:commit"
+    env.IMAGE_TAG = fullVersion
+    sh "mvn package"
 }
