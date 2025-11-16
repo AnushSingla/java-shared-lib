@@ -1,6 +1,3 @@
-
-import com.example.Docker
-def call(String imageName){
-    return new Docker(this).buildDocker(imageName)
-
+def call(String imagename , String path ="."){
+    sh "docker build -t ${imagename} ${path}"
 }
