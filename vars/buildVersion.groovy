@@ -1,10 +1,13 @@
 def call(String folderPath = '') {
     def packageFile = "${folderPath}/package.json"
     def pkgJSON = readJSON file: packageFile
-    
-    echo "Current version: ${pkgJSON.version}"
 
-    def parts = pkgJSON.version.split('\\.')
+    // Convert JSON value into real string
+    def versionString = pkgJSON.version.toString()
+    echo "Current version: ${versionString}"
+
+    // Split version correctly
+    def parts = versionString.split("\\.")
     def major = parts[0] as int
     def minor = parts[1] as int
     def patch = parts[2] as int
@@ -13,10 +16,11 @@ def call(String folderPath = '') {
     def newversion = "${major}.${minor}.${patch}"
     echo "New version: ${newversion}"
 
+    // Write updated version back
     pkgJSON.version = newversion
     writeJSON file: packageFile, json: pkgJSON, pretty: 4
 
-    // 🔥 USE JENKINS CREDENTIALS FOR GIT PUSH
+    // Commit & push changes
     withCredentials([usernamePassword(
         credentialsId: 'github-jenkins',
         usernameVariable: 'GIT_USER',
@@ -31,7 +35,6 @@ def call(String folderPath = '') {
             
             git add package.json
             git commit -m "CI: Version bump to ${newversion}" || true
-
             git push origin HEAD:main
         """
     }
