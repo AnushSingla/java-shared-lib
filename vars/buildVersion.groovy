@@ -32,7 +32,7 @@ def call(String folderPath = '') {
             git config user.name "Jenkins Bot Asha-Saathi"
 
             git remote set-url origin https://${GIT_USER}:${GIT_PASS}@github.com/AnushSingla/Asha.git
-            
+             git pull origin main --rebase 
             git add package.json
             git commit -m "CI: Version bump to ${newversion}" || true
             git push origin HEAD:main
