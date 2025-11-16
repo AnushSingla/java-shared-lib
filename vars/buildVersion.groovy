@@ -44,7 +44,7 @@ def call(String folderPath = '') {
     echo "New version: ${newVersion}"
 
     // 3. Update package.json
-    pkgJSON.version = newVersion
+    pkgJSON.version = newVersion.toString()
     writeJSON file: packageFile, json: pkgJSON, pretty: 4 
 
    
