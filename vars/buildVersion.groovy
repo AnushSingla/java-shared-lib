@@ -1,13 +1,21 @@
-def call(String folderPath = ''){
+def call(String folderPath = '') {
     def packageFile = "${folderPath}/package.json"
-    def pkgJson = readJSON file: packageFile
-    echo("Current version ${pkgJSON.version}")
-    def(major,minor,patch) = pkgJSON.version.tokenize('.').collect(it as int )
+    def pkgJSON = readJSON file: packageFile
+    
+    echo "Current version: ${pkgJSON.version}"
+
+    def parts = pkgJSON.version.split('\\.')
+    def major = parts[0] as int
+    def minor = parts[1] as int
+    def patch = parts[2] as int
+
     patch = patch + 1
     def newversion = "${major}.${minor}.${patch}"
+
     echo "New version: ${newversion}"
+
     pkgJSON.version = newversion
-    writeJSON file: packageFile, json: pkgJson, pretty: 4
+    writeJSON file: packageFile, json: pkgJSON, pretty: 4
 
     sh """
         cd ${folderPath}
