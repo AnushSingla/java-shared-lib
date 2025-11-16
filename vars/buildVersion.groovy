@@ -57,7 +57,7 @@ def call(String folderPath = '') {
             cd ${folderPath}
             
             git add package.json
-            git commit -m "CI: Version bump to ${newVersion}" || true
+            git commit -m "CI: Version bump to ${newVersion} [ci skip] " || true
             git push https://${GIT_USER}:${GIT_PASS}@github.com/AnushSingla/asha-saathi.git HEAD:main
         """
     }
