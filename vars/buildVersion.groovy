@@ -55,7 +55,7 @@ def call(String folderPath = '') {
     )]) {
         sh """
             cd ${folderPath}
-            // No need to pull again, just add, commit, push
+            
             git add package.json
             git commit -m "CI: Version bump to ${newVersion}" || true
             git push https://${GIT_USER}:${GIT_PASS}@github.com/AnushSingla/Asha.git HEAD:main
