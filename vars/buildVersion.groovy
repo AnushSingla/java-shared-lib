@@ -40,7 +40,7 @@ def call(String folderPath = '') {
             git config user.email "jenkins@asha-saathi.com"
             git config user.name "Jenkins Bot"
 
-            git pull origin main --rebase
+            
 
             git add package.json
             git commit -m "CI: Version bump to ${newVersion}" || true
